@@ -2,7 +2,7 @@
 const std = @import("std");
 const edsm = @import("edsm.zig");
 const ecap = @import("event-capture.zig");
-const esrc = @import("event-sources.zig");
+// const esrc = @import("event-sources.zig");
 
 /// Generic (non-growable) ring buffer
 pub fn RingBuffer(comptime T: type, comptime capacity: u16) type {
