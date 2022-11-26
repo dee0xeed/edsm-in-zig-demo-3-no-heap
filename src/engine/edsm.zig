@@ -29,6 +29,7 @@ pub const StageMachine = struct {
     is_running: bool = false,
 
     stages: [8]Stage = undefined,
+    // if you need more consider decomposing your machine
     n_stages: usize = 0,
     current: usize = 0, // number of current state
 
