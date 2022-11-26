@@ -16,10 +16,7 @@ const MessageQueue = msgq.MessageQueue;
 const Message = msgq.Message;
 
 const esrc = @import("event-sources.zig");
-const EventSourceKind = esrc.EventSourceKind;
 const EventSource = esrc.EventSource;
-const EventSourceInfo = esrc.EventSourceInfo;
-const IoInfo = esrc.IoInfo;
 const edsm = @import("edsm.zig");
 const StageMachine = edsm.StageMachine;
 
@@ -37,27 +34,6 @@ pub const EventQueue = struct {
 
     pub fn fini(self: *EventQueue) void {
         os.close(self.fd);
-    }
-
-    fn getIoEventInfo(es: *EventSource, events: u32) !u4 {
-
-        const FIONREAD = os.linux.T.FIONREAD;
-        if (0 != events & (EPOLL.ERR | EPOLL.HUP | EPOLL.RDHUP)) {
-            return Message.D2;
-        }
-
-        if (0 != events & EPOLL.OUT)
-            return Message.D1;
-
-        if (0 != events & EPOLL.IN) {
-            var ba: u32 = 0;
-            _ = ioctl(es.id, FIONREAD, @ptrToInt(&ba)); // IOCINQ
-            // see https://github.com/ziglang/zig/issues/12961
-            es.info.io.bytes_avail = ba;
-            return Message.D0;
-        }
-
-        unreachable;
     }
 
     pub fn wait(self: *EventQueue) !void {
