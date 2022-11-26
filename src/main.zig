@@ -8,7 +8,7 @@ const DirMon = @import("state-machines/dirmon.zig").DirMon;
 
 fn help() void {
     std.debug.print("Usage\n", .{});
-    std.debug.print("{s} <directory-to-monitor>\n", .{std.os.argv[0]});
+    std.debug.print("{s} <directory-to-monitor>\n", .{os.argv[0]});
 }
 
 pub fn main() !void {
