@@ -105,36 +105,6 @@ pub const StageMachine = struct {
         return sm;
     }
 
-    pub fn initTimer(self: *Self, tm: *EventSource, seqn: u4) !void {
-        tm.* = EventSource.initNumbered(self, .tm, .none, seqn);
-        try tm.getId(.{});
-    }
-
-    pub fn initSignal(self: *Self, sg: *EventSource, signo: u6, seqn: u4) !void {
-        sg.* = EventSource.initNumbered(self, .sg, .none, seqn);
-        try sg.getId(.{signo});
-    }
-
-    pub fn initListener(self: *Self, io: *EventSource, port: u16) !void {
-        io.* = EventSource.init(self, .io, .ssock);
-        try io.getId(.{port});
-    }
-
-    pub fn initIo(self: *Self, io: *EventSource) void {
-        io.id = -1;
-        io.kind = .io;
-        io.info = EventSource.Info{.io = AboutIo{}};
-        io.owner = self;
-        io.seqn = 0; // undefined;
-    }
-
-    pub fn initFsys(self: *Self, fs: *EventSource) !void {
-        fs.* = EventSource.init(self, .fs, .none);
-        fs.info.fs.event = @ptrCast(*FsysEvent, @alignCast(@alignOf(FsysEvent), &fs.info.fs.buf[0]));
-        fs.info.fs.fname = fs.info.fs.buf[@sizeOf(FsysEvent)..];
-        try fs.getId(.{});
-    }
-
     /// state machine engine
     pub fn reactTo(self: *Self, msg: Message) void {
         const row = msg.row; //@enumToInt(msg.esk);
