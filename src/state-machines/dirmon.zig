@@ -2,7 +2,6 @@
 const std = @import("std");
 const os = std.os;
 const print = std.debug.print;
-const Allocator = std.mem.Allocator;
 
 const mq = @import("../engine/message-queue.zig");
 const MessageDispatcher = mq.MessageDispatcher;
