@@ -55,7 +55,7 @@ pub const Signal = struct {
     number: u4,
     info: SigInfo = undefined,
 
-    pub fn init(sm: *StageMachine, signo: u6, nm: u4) !Signal {
+    pub fn init(sm: *StageMachine, signo: u6, code: u8) !Signal {
         return Signal {
             .es = .{
                 .id = try getSignalId(signo),
@@ -63,7 +63,7 @@ pub const Signal = struct {
                 .readInfoImpl = &readInfo,
                 .eq = sm.md.eq,
             },
-            .number = nm,
+            .number = @intCast(u4, code & 0x0F),
         };
     }
 
@@ -93,18 +93,18 @@ pub const Signal = struct {
 
 pub const Timer = struct {
     es: EventSource,
-    numb: u4,
+    number: u4,
     nexp: u64 = 0,
 
-    pub fn init(sm: *StageMachine, nm: u4) !Timer {
+    pub fn init(sm: *StageMachine, code: u8) !Timer {
         return Timer {
             .es = .{
                 .id = try timerFd(os.CLOCK.REALTIME, 0),
                 .owner = sm,
                 .readInfoImpl = &readInfo,
-                .eq = &sm.md.eq,
+                .eq = sm.md.eq,
             },
-            .numb = nm,
+            .number = @intCast(u4, code & 0x0F),
         };
     }
 
@@ -136,7 +136,7 @@ pub const Timer = struct {
         var p1 = &self.nexp;
         var p2 = @ptrCast([*]u8, @alignCast(@alignOf([*]u8), p1));
         var buf = p2[0..@sizeOf(u64)];
-        _ = try os.read(self.id, buf[0..]);
+        _ = try os.read(es.id, buf[0..]);
         return RowCol {
             .row = 3,
             .col = self.number,

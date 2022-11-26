@@ -26,6 +26,8 @@ pub const DirMon = struct {
     sm: StageMachine,
     sg0: Signal = undefined,
     sg1: Signal = undefined,
+    tm0: Timer = undefined,
+    cnt: usize = 0,
     fs0: FileSystem = undefined,
     dir: []const u8,
 
@@ -34,27 +36,28 @@ pub const DirMon = struct {
         var ctor = Stage{.name = "INIT", .enter = &initEnter, .leave = null};
         var work = Stage{.name = "WORK", .enter = &workEnter, .leave = &workLeave};
 
-        ctor.setReflex(0, Message.M0, .{.transition = 1});
+        ctor.setReflex(Message.M0, .{.transition = 1});
 
-        work.setReflex(4, Message.F00, .{.action = &workF00});
-        work.setReflex(4, Message.F01, .{.action = &workF01});
-        work.setReflex(4, Message.F02, .{.action = &workF02});
-        work.setReflex(4, Message.F03, .{.action = &workF03});
-        work.setReflex(4, Message.F04, .{.action = &workF04});
-        work.setReflex(4, Message.F05, .{.action = &workF05});
-        work.setReflex(4, Message.F06, .{.action = &workF06});
-        work.setReflex(4, Message.F07, .{.action = &workF07});
-        work.setReflex(4, Message.F08, .{.action = &workF08});
-        work.setReflex(4, Message.F09, .{.action = &workF09});
-        work.setReflex(4, Message.F10, .{.action = &workF10});
-        work.setReflex(4, Message.F11, .{.action = &workF11});
-        work.setReflex(4, Message.F12, .{.action = &workF12});
-        work.setReflex(4, Message.F13, .{.action = &workF13});
-        work.setReflex(4, Message.F14, .{.action = &workF14});
-        work.setReflex(4, Message.F15, .{.action = &workF15});
+        work.setReflex(Message.F00, .{.action = &workF00});
+        work.setReflex(Message.F01, .{.action = &workF01});
+        work.setReflex(Message.F02, .{.action = &workF02});
+        work.setReflex(Message.F03, .{.action = &workF03});
+        work.setReflex(Message.F04, .{.action = &workF04});
+        work.setReflex(Message.F05, .{.action = &workF05});
+        work.setReflex(Message.F06, .{.action = &workF06});
+        work.setReflex(Message.F07, .{.action = &workF07});
+        work.setReflex(Message.F08, .{.action = &workF08});
+        work.setReflex(Message.F09, .{.action = &workF09});
+        work.setReflex(Message.F10, .{.action = &workF10});
+        work.setReflex(Message.F11, .{.action = &workF11});
+        work.setReflex(Message.F12, .{.action = &workF12});
+        work.setReflex(Message.F13, .{.action = &workF13});
+        work.setReflex(Message.F14, .{.action = &workF14});
+        work.setReflex(Message.F15, .{.action = &workF15});
 
-        work.setReflex(2, Message.S0, .{.action = &workS0});
-        work.setReflex(2, Message.S1, .{.action = &workS0});
+        work.setReflex(Message.T0, .{.action = &workT0});
+        work.setReflex(Message.S0, .{.action = &workS0});
+        work.setReflex(Message.S1, .{.action = &workS0});
 
         const sm = StageMachine.init (
             md, "DirMon",
@@ -71,6 +74,7 @@ pub const DirMon = struct {
         var me = @fieldParentPtr(DirMon, "sm", sm);
         // NOTE: we can't do this in .init() since 
         // address of the machine is not known there yet
+        me.tm0 = Timer.init(sm, Message.T0) catch unreachable;
         me.sg0 = Signal.init(sm, os.SIG.INT, Message.S0) catch unreachable;
         me.sg1 = Signal.init(sm, os.SIG.TERM, Message.S1) catch unreachable;
         me.fs0 = FileSystem.init(sm) catch unreachable;
@@ -86,6 +90,8 @@ pub const DirMon = struct {
         me.fs0.es.enable() catch unreachable;
         me.sg0.es.enable() catch unreachable;
         me.sg1.es.enable() catch unreachable;
+        me.tm0.es.enable() catch unreachable;
+        me.tm0.start(2000) catch unreachable;
     }
 
     fn workF00(sm: *StageMachine, src: ?*StageMachine, dptr: ?*anyopaque) void {
@@ -250,6 +256,17 @@ pub const DirMon = struct {
         var me = @fieldParentPtr(DirMon, "sm", sm);
         print("'{s}': ignored\n", .{me.dir});
         os.raise(os.SIG.TERM) catch unreachable;
+    }
+
+    fn workT0(sm: *StageMachine, src: ?*StageMachine, dptr: ?*anyopaque) void {
+        var me = @fieldParentPtr(DirMon, "sm", sm);
+        _ = src;
+        me.cnt += 1;
+        print("tick #{}\n", .{me.cnt});
+        var es = util.opaqPtrTo(dptr, *EventSource);
+        var tm = @fieldParentPtr(Timer, "es", es);
+        es.enable() catch unreachable;
+        tm.start(2000) catch unreachable;
     }
 
     fn workS0(sm: *StageMachine, src: ?*StageMachine, dptr: ?*anyopaque) void {

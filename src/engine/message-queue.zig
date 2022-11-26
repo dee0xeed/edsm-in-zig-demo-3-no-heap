@@ -42,49 +42,49 @@ pub fn RingBuffer(comptime T: type, comptime capacity: u16) type {
 pub const Message = struct {
 
     /// internal messages
-    pub const M0: u4 = 0;
-    pub const M1: u4 = 1;
-    pub const M2: u4 = 2;
-    pub const M3: u4 = 3;
-    pub const M4: u4 = 4;
-    pub const M5: u4 = 5;
-    pub const M6: u4 = 6;
-    pub const M7: u4 = 7;
+    pub const M0: u8 = 0;
+    pub const M1: u8 = 1;
+    pub const M2: u8 = 2;
+    pub const M3: u8 = 3;
+    pub const M4: u8 = 4;
+    pub const M5: u8 = 5;
+    pub const M6: u8 = 6;
+    pub const M7: u8 = 7;
 
     /// read()/accept() will not block (POLLIN)
-    pub const D0: u4 = 0;
+    pub const D0: u8 = (1 << 4) | 0;
     /// write() will not block/connection established (POLLOUT)
-    pub const D1: u4 = 1;
+    pub const D1: u8 = (1 << 4) | 1;
     /// error happened (POLLERR, POLLHUP, POLLRDHUP)
-    pub const D2: u4 = 2;
-
-    /// timers
-    pub const T0: u4 = 0;
-    pub const T1: u4 = 1;
-    pub const T2: u4 = 2;
+    pub const D2: u8 = (1 << 4) | 2;
 
     /// signals
-    pub const S0: u4 = 0;
-    pub const S1: u4 = 1;
-    pub const S2: u4 = 2;
+    pub const S0: u8 = (2 << 4) | 0;
+    pub const S1: u8 = (2 << 4) | 1;
+    pub const S2: u8 = (2 << 4) | 2;
+
+    /// timers
+    pub const T0: u8 = (3 << 4) | 0;
+    pub const T1: u8 = (3 << 4) | 1;
+    pub const T2: u8 = (3 << 4) | 2;
 
     /// file system events
-    pub const F00: u4 =  0; // IN_ACCESS 0x00000001 /* File was accessed */
-    pub const F01: u4 =  1; // IN_MODIFY 0x00000002 /* File was modified */
-    pub const F02: u4 =  2; // IN_ATTRIB 0x00000004 /* Metadata changed */
-    pub const F03: u4 =  3; // IN_CLOSE_WRITE 0x00000008 /* Writtable file was closed */
-    pub const F04: u4 =  4; // IN_CLOSE_NOWRITE 0x00000010 /* Unwrittable file closed */
-    pub const F05: u4 =  5; // IN_OPEN 0x00000020 /* File was opened */
-    pub const F06: u4 =  6; // IN_MOVED_FROM 0x00000040 /* File was moved from X */
-    pub const F07: u4 =  7; // IN_MOVED_TO 0x00000080 /* File was moved to Y */
-    pub const F08: u4 =  8; // IN_CREATE 0x00000100 /* Subfile was created */
-    pub const F09: u4 =  9; // IN_DELETE 0x00000200 /* Subfile was deleted */
-    pub const F10: u4 = 10; // IN_DELETE_SELF 0x00000400 /* Self was deleted */
-    pub const F11: u4 = 11; // IN_MOVE_SELF 0x00000800 /* Self was moved */
-    pub const F12: u4 = 12; // this bit is unused
-    pub const F13: u4 = 13; // IN_UNMOUNT 0x00002000 /* Backing fs was unmounted */
-    pub const F14: u4 = 14; // IN_Q_OVERFLOW 0x00004000 /* Event queued overflowed */
-    pub const F15: u4 = 15; // IN_IGNORED 0x00008000 /* File was ignored */
+    pub const F00: u8 = (4 << 4) |  0; // IN_ACCESS 0x00000001 /* File was accessed */
+    pub const F01: u8 = (4 << 4) |  1; // IN_MODIFY 0x00000002 /* File was modified */
+    pub const F02: u8 = (4 << 4) |  2; // IN_ATTRIB 0x00000004 /* Metadata changed */
+    pub const F03: u8 = (4 << 4) |  3; // IN_CLOSE_WRITE 0x00000008 /* Writtable file was closed */
+    pub const F04: u8 = (4 << 4) |  4; // IN_CLOSE_NOWRITE 0x00000010 /* Unwrittable file closed */
+    pub const F05: u8 = (4 << 4) |  5; // IN_OPEN 0x00000020 /* File was opened */
+    pub const F06: u8 = (4 << 4) |  6; // IN_MOVED_FROM 0x00000040 /* File was moved from X */
+    pub const F07: u8 = (4 << 4) |  7; // IN_MOVED_TO 0x00000080 /* File was moved to Y */
+    pub const F08: u8 = (4 << 4) |  8; // IN_CREATE 0x00000100 /* Subfile was created */
+    pub const F09: u8 = (4 << 4) |  9; // IN_DELETE 0x00000200 /* Subfile was deleted */
+    pub const F10: u8 = (4 << 4) | 10; // IN_DELETE_SELF 0x00000400 /* Self was deleted */
+    pub const F11: u8 = (4 << 4) | 11; // IN_MOVE_SELF 0x00000800 /* Self was moved */
+    pub const F12: u8 = (4 << 4) | 12; // this bit is unused
+    pub const F13: u8 = (4 << 4) | 13; // IN_UNMOUNT 0x00002000 /* Backing fs was unmounted */
+    pub const F14: u8 = (4 << 4) | 14; // IN_Q_OVERFLOW 0x00004000 /* Event queued overflowed */
+    pub const F15: u8 = (4 << 4) | 15; // IN_IGNORED 0x00008000 /* File was ignored */
 
     /// message sender (null for messages from OS)
     src: ?*edsm.StageMachine,

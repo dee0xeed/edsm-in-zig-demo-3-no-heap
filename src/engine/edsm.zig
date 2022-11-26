@@ -72,9 +72,9 @@ pub const StageMachine = struct {
 
 //        sm: *StageMachine = undefined,
 
-        pub fn setReflex(self: *Stage, row: u3, col: u4, refl: Reflex) void {
-//            const row: u8 = @enumToInt(esk);
-//            const col: u8 = seqn;
+        pub fn setReflex(self: *Stage, code: u8, refl: Reflex) void {
+            const row: u8 = code >> 4;
+            const col: u8 = code & 0x0F;
             // const sm = @fieldParentPtr(StageMachine, "stages", self);
             if (self.reflexes[row][col]) |_| {
 //                print("{s}/{s} already has relfex for '{c}{}'\n", .{self.sm.name, self.name, esk_tags[row], seqn});
