@@ -7,14 +7,6 @@ const MessageDispatcher = mq.MessageDispatcher;
 const MessageQueue = mq.MessageQueue;
 const Message = mq.Message;
 
-const esrc = @import("event-sources.zig");
-const EventSource = esrc.EventSource;
-const AboutSignal= EventSource.AboutSignal;
-const AboutIo = EventSource.AboutIo;
-const AboutTimer= EventSource.AboutTimer;
-
-const FsysEvent = std.os.linux.inotify_event;
-
 pub const StageMachine = struct {
 
     const Self = @This();
