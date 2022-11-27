@@ -134,7 +134,6 @@ pub const StageMachine = struct {
     }
 
     pub fn msgTo(self: *Self, dst: ?*Self, code: u4, data: ?*anyopaque) void {
-//        if ((code & 0xF0) != 0) unreachable;
         const msg = Message {
             .src = self,
             .dst = dst,
