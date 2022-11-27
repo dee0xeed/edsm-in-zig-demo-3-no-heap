@@ -23,11 +23,7 @@ const fsysAddWatch = os.inotify_add_watch;
 const edsm = @import("edsm.zig");
 const StageMachine = edsm.StageMachine;
 const ecap = @import("event-capture.zig");
-
-pub const RowCol = struct {
-    row: u3,
-    col: u4,
-};
+const Message = @import("message-queue.zig").Message;
 
 pub const EventSource = struct {
 
@@ -36,9 +32,9 @@ pub const EventSource = struct {
     eq: *ecap.EventQueue,
 
     // "virtual method"
-    readInfoImpl: *const fn(es: *EventSource, event_mask: u32) anyerror!RowCol,
-    pub fn readInfo(es: *EventSource, event_mask: u32) !RowCol {
-        return try es.readInfoImpl(es, event_mask);
+    getMessageCodeImpl: *const fn(es: *EventSource, event_mask: u32) anyerror!u8,
+    pub fn getMessageCode(es: *EventSource, event_mask: u32) !u8 {
+        return try es.getMessageCodeImpl(es, event_mask);
     }
 
     pub fn enable(es: *EventSource) !void {
@@ -52,7 +48,7 @@ pub const EventSource = struct {
 
 pub const Signal = struct {
     es: EventSource,
-    number: u4,
+    code: u8,
     info: SigInfo = undefined,
 
     pub fn init(sm: *StageMachine, signo: u6, code: u8) !Signal {
@@ -60,10 +56,10 @@ pub const Signal = struct {
             .es = .{
                 .id = try getSignalId(signo),
                 .owner = sm,
-                .readInfoImpl = &readInfo,
+                .getMessageCodeImpl = &readInfo,
                 .eq = sm.md.eq,
             },
-            .number = @intCast(u4, code & 0x0F),
+            .code = code,
         };
     }
 
@@ -75,25 +71,20 @@ pub const Signal = struct {
         return signalFd(-1, &sset, 0);
     }
 
-    fn readInfo(es: *EventSource, event_mask: u32) !RowCol {
+    fn readInfo(es: *EventSource, event_mask: u32) !u8 {
         // check event mask here...
         _ = event_mask;
         var self = @fieldParentPtr(Signal, "es", es);
         var p1 = &self.info;
         var p2 = @ptrCast([*]u8, @alignCast(@alignOf([*]u8), p1));
-//        var buf = p2[0..@sizeOf(SigInfo)];
-//        _ = try os.read(es.id, buf[0..]);
         _ = try os.read(es.id, p2[0..@sizeOf(SigInfo)]);
-        return RowCol {
-            .row = 2,
-            .col = self.number,
-        };
+        return self.code;
     }
 };
 
 pub const Timer = struct {
     es: EventSource,
-    number: u4,
+    code: u8,
     nexp: u64 = 0,
 
     pub fn init(sm: *StageMachine, code: u8) !Timer {
@@ -101,10 +92,10 @@ pub const Timer = struct {
             .es = .{
                 .id = try timerFd(os.CLOCK.REALTIME, 0),
                 .owner = sm,
-                .readInfoImpl = &readInfo,
+                .getMessageCodeImpl = &readInfo,
                 .eq = sm.md.eq,
             },
-            .number = @intCast(u4, code & 0x0F),
+            .code = code,
         };
     }
 
@@ -130,17 +121,14 @@ pub const Timer = struct {
         return try setValue(tm.es.id, 0);
     }
 
-    pub fn readInfo(es: *EventSource, event_mask: u32) !RowCol {
+    pub fn readInfo(es: *EventSource, event_mask: u32) !u8 {
         _ = event_mask;
         var self = @fieldParentPtr(Timer, "es", es);
         var p1 = &self.nexp;
         var p2 = @ptrCast([*]u8, @alignCast(@alignOf([*]u8), p1));
         var buf = p2[0..@sizeOf(u64)];
         _ = try os.read(es.id, buf[0..]);
-        return RowCol {
-            .row = 3,
-            .col = self.number,
-        };
+        return self.code;
     }
 };
 
@@ -156,7 +144,7 @@ pub const FileSystem = struct {
             .es = .{
                 .id = try fsysFd(0),
                 .owner = sm,
-                .readInfoImpl = &readInfo,
+                .getMessageCodeImpl = &readInfo,
                 .eq = sm.md.eq,
             },
         };
@@ -170,7 +158,7 @@ pub const FileSystem = struct {
     // a little bit tricky function that reads
     // exactly *one* event from inotify system
     // regardless of weither it has file name or not
-    fn readInfo(es: *EventSource, event_mask: u32) !RowCol {
+    fn readInfo(es: *EventSource, event_mask: u32) !u8 {
         _ = event_mask;
         var self = @fieldParentPtr(FileSystem, "es", es);
         mem.set(u8, self.buf[0..], 0);
@@ -186,10 +174,7 @@ pub const FileSystem = struct {
         }
         print("file system events = {b:0>32}\n", .{self.event.mask});
         const ctz = @ctz(self.event.mask);
-        return RowCol {
-            .row = 4,
-            .col = @intCast(u4, ctz),
-        };
+        return Message.FROW | @intCast(u4, ctz);
     }
 
     pub fn addWatch(self: *FileSystem, path: []const u8, mask: u32) !void {

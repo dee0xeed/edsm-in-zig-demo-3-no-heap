@@ -46,12 +46,11 @@ pub const EventQueue = struct {
 
         for (events[0..n]) |ev| {
             const es = @intToPtr(*EventSource, ev.data.ptr);
-            const row_col = try es.readInfo(ev.events);
+            const code = try es.getMessageCode(ev.events);
             const msg = Message {
                 .src = null,
                 .dst = es.owner,
-                .row = row_col.row,
-                .col = row_col.col,
+                .code = code,
                 .ptr = es,
             };
             try self.mq.put(msg);

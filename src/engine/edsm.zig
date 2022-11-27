@@ -99,14 +99,14 @@ pub const StageMachine = struct {
 
     /// state machine engine
     pub fn reactTo(self: *Self, msg: Message) void {
-        const row = msg.row; //@enumToInt(msg.esk);
-        const col = msg.col;
+        const row = msg.code >> 4;
+        const col = msg.code & 0x0F;
         const current = self.current;
 
         var sender = if (msg.src) |s| s.name else "OS";
         if (msg.src == self) sender = "SELF";
 
-        print(
+        print (
             "{s} @ {s} got '{c}{}' from {s}\n",
             .{self.name, self.stages[current].name, Stage.esk_tags[row], col, sender}
         );
@@ -125,7 +125,7 @@ pub const StageMachine = struct {
                 },
             }
         } else {
-            print(
+            print (
                 "\n{s} @ {s} : no reflex for '{c}{}'\n",
                 .{self.name, self.stages[current].name, Stage.esk_tags[row], col}
             );
@@ -133,12 +133,12 @@ pub const StageMachine = struct {
         }
     }
 
-    pub fn msgTo(self: *Self, dst: ?*Self, sqn: u4, data: ?*anyopaque) void {
+    pub fn msgTo(self: *Self, dst: ?*Self, code: u8, data: ?*anyopaque) void {
+        if ((code & 0xF0) != 0) unreachable;
         const msg = Message {
             .src = self,
             .dst = dst,
-            .row = 0,
-            .col = sqn,
+            .code = code,
             .ptr = data,
         };
         // message buffer is not growable so this will panic
