@@ -42,14 +42,14 @@ pub fn RingBuffer(comptime T: type, comptime capacity: u16) type {
 pub const Message = struct {
 
     /// internal messages
-    pub const M0: u8 = 0;
-    pub const M1: u8 = 1;
-    pub const M2: u8 = 2;
-    pub const M3: u8 = 3;
-    pub const M4: u8 = 4;
-    pub const M5: u8 = 5;
-    pub const M6: u8 = 6;
-    pub const M7: u8 = 7;
+    pub const M0: u4 = 0;
+    pub const M1: u4 = 1;
+    pub const M2: u4 = 2;
+    pub const M3: u4 = 3;
+    pub const M4: u4 = 4;
+    pub const M5: u4 = 5;
+    pub const M6: u4 = 6;
+    pub const M7: u4 = 7;
 
     pub const DROW: u8 = (1 << 4);
     /// read()/accept() will not block (POLLIN)
