@@ -51,22 +51,25 @@ pub const Message = struct {
     pub const M6: u8 = 6;
     pub const M7: u8 = 7;
 
+    pub const DROW: u8 = (1 << 4);
     /// read()/accept() will not block (POLLIN)
-    pub const D0: u8 = (1 << 4) | 0;
+    pub const D0: u8 = DROW | 0;
     /// write() will not block/connection established (POLLOUT)
-    pub const D1: u8 = (1 << 4) | 1;
+    pub const D1: u8 = DROW | 1;
     /// error happened (POLLERR, POLLHUP, POLLRDHUP)
-    pub const D2: u8 = (1 << 4) | 2;
+    pub const D2: u8 = DROW | 2;
 
     /// signals
-    pub const S0: u8 = (2 << 4) | 0;
-    pub const S1: u8 = (2 << 4) | 1;
-    pub const S2: u8 = (2 << 4) | 2;
+    const SROW: u8 = (2 << 4);
+    pub const S0: u8 = SROW | 0;
+    pub const S1: u8 = SROW | 1;
+    pub const S2: u8 = SROW | 2;
 
     /// timers
-    pub const T0: u8 = (3 << 4) | 0;
-    pub const T1: u8 = (3 << 4) | 1;
-    pub const T2: u8 = (3 << 4) | 2;
+    const TROW: u8 = (3 << 4);
+    pub const T0: u8 = TROW | 0;
+    pub const T1: u8 = TROW | 1;
+    pub const T2: u8 = TROW | 2;
 
     /// file system events
     pub const FROW: u8 = (4 << 4);
@@ -91,10 +94,6 @@ pub const Message = struct {
     src: ?*edsm.StageMachine,
     /// message recipient (null will stop event loop)
     dst: ?*edsm.StageMachine,
-//    /// row number for stage reflex matrix
-//    row: u3, //esrc.EventSource.Kind,
-//    /// column number for stage reflex matrix
-//    col: u4,
     code: u8, // (row << 4) | col
     /// *EventSource for messages from OS (Tx, Sx, Dx, Fx),
     /// otherwise (Mx) pointer to some arbitrary data if needed
