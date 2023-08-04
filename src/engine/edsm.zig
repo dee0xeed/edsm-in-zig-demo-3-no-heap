@@ -90,7 +90,7 @@ pub const StageMachine = struct {
             .name = name,
             .md = md,
         };
-        for (stages) |stage, k| {
+        for (stages, 0..) |stage, k| {
             sm.stages[k] = stage;
         }
         sm.n_stages = stages.len;

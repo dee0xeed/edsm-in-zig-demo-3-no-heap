@@ -76,7 +76,7 @@ pub const Signal = struct {
         _ = event_mask;
         var self = @fieldParentPtr(Signal, "es", es);
         var p1 = &self.info;
-        var p2 = @ptrCast([*]u8, @alignCast(@alignOf([*]u8), p1));
+        var p2: [*]u8 = @ptrCast(@alignCast(p1));
         _ = try os.read(es.id, p2[0..@sizeOf(SigInfo)]);
         return self.code;
     }
@@ -125,7 +125,7 @@ pub const Timer = struct {
         _ = event_mask;
         var self = @fieldParentPtr(Timer, "es", es);
         var p1 = &self.nexp;
-        var p2 = @ptrCast([*]u8, @alignCast(@alignOf([*]u8), p1));
+        var p2: [*]u8 = @ptrCast(@alignCast(p1));
         var buf = p2[0..@sizeOf(u64)];
         _ = try os.read(es.id, buf[0..]);
         return self.code;
@@ -151,7 +151,7 @@ pub const FileSystem = struct {
     }
 
     pub fn setupPointers(fs: *FileSystem) void {
-        fs.event = @ptrCast(*FsysEvent, @alignCast(@alignOf(FsysEvent), &fs.buf[0]));
+        fs.event = @ptrCast(@alignCast(&fs.buf[0]));
         fs.fname = fs.buf[@sizeOf(FsysEvent)..];
     }
 
@@ -161,7 +161,7 @@ pub const FileSystem = struct {
     fn readInfo(es: *EventSource, event_mask: u32) !u8 {
         _ = event_mask;
         var self = @fieldParentPtr(FileSystem, "es", es);
-        mem.set(u8, self.buf[0..], 0);
+        @memset(self.buf[0..], 0);
         var len: usize = @sizeOf(FsysEvent);
         while (true) {
             const ret = os.system.read(es.id, &self.buf, len);
@@ -173,8 +173,8 @@ pub const FileSystem = struct {
             // check len here
         }
         print("file system events = {b:0>32}\n", .{self.event.mask});
-        const ctz = @ctz(self.event.mask);
-        return Message.FROW | @intCast(u4, ctz);
+        const ctz: u8 = @ctz(self.event.mask);
+        return Message.FROW | ctz;
     }
 
     pub fn addWatch(self: *FileSystem, path: []const u8, mask: u32) !void {
